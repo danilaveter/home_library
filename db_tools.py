@@ -312,6 +312,7 @@ def fetch():
 
     
 if __name__ == "__main__":
-    add_book_isbn()
+    # add_book_isbn()
     # print(is_exists('9783770740215', 'Wo geht der Astronaut aufs Klo? - Hardcover'))
     # fetch()
+    add_to_place(490)
