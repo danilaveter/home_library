@@ -15,10 +15,7 @@ from configparser import ConfigParser
 from isbnlib import meta, is_isbn13, cover, desc
 from isbnlib.registry import bibformatters
 
-
-import pandas as pd
-
-
+# import pandas as pd
 
 console = Console()
 app = typer.Typer()
@@ -36,11 +33,7 @@ conn = psycopg2.connect(connection_string)
 # Create a cursor object
 cur = conn.cursor()
 
-# Create DataFrame
 
-@app.command()
-def add_title_isbn():
-    pass
 
 @app.command('ok_data')
 def ok_data(isbn: str = '9781844145720'):
@@ -134,7 +127,10 @@ def add_book_isbn():
             lang = bookdata['Language']
             description = bookdata['desc']
             
-
+            if not year:
+                year = 0
+    
+            publisher = publisher.replace("'", "''")
             description = description.replace("'", "''")
             title = title.replace("'","''")
 
@@ -155,7 +151,7 @@ def add_book_isbn():
         else:
             message = '''ISBN is correct but data not found.
                 Please add the titel by hand'''
-            # typer.secho(message, fg=typer.colors.RED)
+            typer.secho(message, fg=typer.colors.RED)
             # act = input("Add title by hand? [y/n]  ")
             # if act.lower() == "y":
             #     add_title_hand()
