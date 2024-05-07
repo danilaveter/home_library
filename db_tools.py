@@ -140,6 +140,7 @@ def add_book_isbn():
                 year = 0
     
             publisher = publisher.replace("'", "''")
+            author = author.replace("'", "''")
             description = description.replace("'", "''")
             title = title.replace("'","''")
 
@@ -158,13 +159,17 @@ def add_book_isbn():
         
 
         else:
-            message = '''ISBN is correct but data not found.
-                Please add the titel by hand.'''
-            typer.secho(message, fg=typer.colors.RED)
-            
-            act = input("Add title by hand? [y/n]  ")
-            if act.lower() == "y":
-                add_title_hand()
+            id = is_exists(isbn_)
+            if id:
+                add_to_place(id)
+            else:
+                message = '''ISBN is correct but data not found.
+                    Please add the titel by hand.'''
+                typer.secho(message, fg=typer.colors.RED)
+                
+                act = input("Add title by hand? [y/n]  ")
+                if act.lower() == "y":
+                    add_title_hand()
                 
     conn.close()
 
