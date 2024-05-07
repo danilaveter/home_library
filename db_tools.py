@@ -1,3 +1,5 @@
+#  install KB plugin for ISBNLIB please using pip install isbnlib-kb
+
 # Command Line Interface 
 import typer 
 from rich.console import Console
@@ -12,7 +14,7 @@ import psycopg2
 from configparser import ConfigParser
 
 # isbn tool
-from isbnlib import meta, is_isbn13, cover, desc
+from isbnlib import meta, is_isbn13, is_isbn10, cover, desc
 from isbnlib.registry import bibformatters
 
 # import pandas as pd
@@ -71,14 +73,14 @@ def ok_data(isbn: str = '9781844145720'):
 # Collect data
 
 @app.command('bookdata')
-def get_bookdata(isbn):
-    # 9781935954439isbn = input('Enter ISBN  ')
+def get_bookdata(isbn, service: str = 'default'):
+    # isbn = input('Enter ISBN  ')
     ''' This returns title, author, puplisher, year, language of the book usind ISBN13'''
 
     print("Looking up data using", isbn)
 
     try:
-        metabook = meta(isbn)
+        metabook = meta(isbn, service)
         if metabook:
             bookdata = {}
             for x,y in metabook.items():
@@ -117,10 +119,13 @@ def add_book_isbn():
     while True:
         print()
         isbn_ = input("ENTER THE ISBN ---> ")
-        if not is_isbn13(isbn_):
-            print('ISBN is nor correct')
+        if (is_isbn13(isbn_) + is_isbn10(isbn_)) < 1:
+            print('ISBN is not correct')
             continue
-        bookdata = get_bookdata(isbn_)
+        # service = 'default'
+        service = 'kb'
+        print("Service = KB")
+        bookdata = get_bookdata(isbn_, service=service)
 
         if bookdata:
             isbn = bookdata["ISBN-13"]
@@ -141,25 +146,26 @@ def add_book_isbn():
             query = f'''INSERT INTO storage_title (isbn, title, author, publisher, year, language, description, user_id, created, in_stock, is_active, ignore_amount)
                 VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', '1', CURRENT_TIMESTAMP, TRUE, TRUE, FALSE)'''
             
-            title_id = is_exists(isbn, title)
+            title_id = is_exists(isbn)
             
             if not title_id:
                 cur.execute(query)
                 conn.commit()
                 print('The Title is successfully added')
                 
-            title_id = is_exists(isbn, title)
+            title_id = is_exists(isbn)
             add_to_place(title_id)
         
 
         else:
             message = '''ISBN is correct but data not found.
-                Please add the titel by hand'''
+                Please add the titel by hand.'''
             typer.secho(message, fg=typer.colors.RED)
-            # act = input("Add title by hand? [y/n]  ")
-            # if act.lower() == "y":
-            #     add_title_hand()
-            break
+            
+            act = input("Add title by hand? [y/n]  ")
+            if act.lower() == "y":
+                add_title_hand()
+                
     conn.close()
 
 
@@ -211,7 +217,7 @@ def add_title_excel(row):
         VALUES ('{isbn}', '{title}', '{author}', '{category_name}', '{level_name}', '{year}', '{description}', CURRENT_TIMESTAMP)"""
     
 
-    if not is_exists(isbn, title):
+    if not is_exists(isbn):
         cur.execute(query)
         print('THE TITLE IS SUCCESSFULLY ADDED')
         id = is_exists(isbn, title)
@@ -234,7 +240,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 3 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 2 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
