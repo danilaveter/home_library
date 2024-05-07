@@ -79,24 +79,27 @@ def get_bookdata(isbn):
 
     try:
         metabook = meta(isbn)
-        bookdata = {}
-        for x,y in metabook.items():
-            if x == "Authors":
-                x = 'Author'
-                y = (',').join(y)
-            bookdata[x] = y
-            typer.secho(f'{x}: {y}', fg=typer.colors.GREEN)
-        bookdata['desc'] = desc(isbn)
-        print(bookdata['desc'])
-        print(cover(isbn))
-        return bookdata
+        if metabook:
+            bookdata = {}
+            for x,y in metabook.items():
+                if x == "Authors":
+                    x = 'Author'
+                    y = (',').join(y)
+                bookdata[x] = y
+                typer.secho(f'{x}: {y}', fg=typer.colors.GREEN)
+            bookdata['desc'] = desc(isbn)
+            print(bookdata['desc'])
+            print(cover(isbn))
+            return bookdata
+        else:
+            return False
     except (Exception, KeyError):
         print(Exception, KeyError)
         return False
 
 # ADD to Database
 
-def is_exists(isbn, title):
+def is_exists(isbn):
     ''' Returns 'True' if book already exists in the DB '''
     query = f"SELECT id FROM storage_title \
         WHERE isbn = '{isbn}'"
@@ -104,8 +107,9 @@ def is_exists(isbn, title):
     cur.execute(query)
     id = cur.fetchone()
     if id:
-        print('ID is: ', id)
+        print(f'is_exists_id = {id}')
         return id[0]
+    print("is_exists NO ID")
     return False
     
 @app.command()
@@ -163,29 +167,38 @@ def add_book_isbn():
 def add_title_hand():
     ''' Add book data to DB
     '''
-    while True:
-        isbn = input("Enter the ISBN: ")
-        title = input("Enter the Title: ")
-        author = input("Enter the Author: ")
-        publisher = input("Enter the publisher: ")
-        year = input("Enter the Year: ")
-        lang = input("Enter the Language: ")
-        description = input("Add the description: ")
+    print()
+    print('MANUAL ADDING MODE')
+    print()
+    isbn = input("Enter the ISBN: ")
+    title = input("Enter the Title: ")
+    author = input("Enter the Author: ")
+    publisher = input("Enter the publisher: ")
+    year = input("Enter the Year: ")
+    lang = input("Enter the Language: ")
+    description = input("Add the description: ")
 
-        query = f'''INSERT INTO storage_title (isbn, title, author, publisher, year, lang, description) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}')'''
-        
-        if not is_exists(isbn, title):
-            cur.execute(query)
-            id = is_exists(isbn, title)
-            print(f"Success added ID is {id}")
-        else:
-            id = is_exists(isbn, title)
-            print(f"Book is already added. ID is {id}")
-        act = input("Add another book? [y/n]  ")
-        if act.lower() != 'y':
-            break
-        else: 
-            continue
+    description = description.replace("'", "''")
+    title = title.replace("'","''")
+    publisher = publisher.replace("'","''")
+    author = author.replace("'","''")
+
+    if not year:
+        year = 0
+
+    query = f'''INSERT INTO storage_title (isbn, title, author, publisher, year, language, description, created, in_stock, is_active, user_id, ignore_amount) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', CURRENT_TIMESTAMP, TRUE, TRUE, '1', FALSE)'''
+    
+    if not is_exists(isbn):
+        cur.execute(query)
+        title_id = is_exists(isbn)
+        conn.commit()
+        print(f"Success added ID is {title_id}")
+    else:
+        id = is_exists(isbn)
+        print(f"Book is already added to table storage_title. ID is {title_id}")
+    
+    add_to_place(title_id)
+
         
 
 @app.command('add_title_excel')
@@ -223,17 +236,26 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
         
         place = 3 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
+    place_amount = is_placebook_exist(title_id, place)
+    if place_amount:
+        print(f'Place book already exist. Current amount is {place_amount}')
+    else:
+        print('place_amount is null')
+
     if amount == None:
+        print()
         amount = int(input("ENTER AMOUNT OF COPIES --> "))
     handle = f"{place}_{title_id}_{amount}"
     
     # chech
-    place_amount = is_placebook_exist(title_id, place)
+    
+    
     if place_amount:
         place_amount = int(place_amount)
         query = f"UPDATE storage_placebook SET copies_num = {amount + place_amount}, added = CURRENT_TIMESTAMP\
         WHERE title_id = {title_id} AND place_id = {place}"
-        print('Place book already exist')
+        print()
+        
     else:
         query = f"INSERT INTO storage_placebook (place_id, title_id, copies_num, handle, added)\
         VALUES ({place}, {title_id}, {amount}, '{handle}', CURRENT_TIMESTAMP)"
@@ -311,3 +333,5 @@ if __name__ == "__main__":
     add_book_isbn()
     # print(is_exists('9783770740215', 'Wo geht der Astronaut aufs Klo? - Hardcover'))
     # fetch()
+    # add_to_place(490)
+    # add_title_hand()
