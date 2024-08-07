@@ -245,7 +245,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 2 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 18 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
