@@ -19,6 +19,25 @@ def get_dict(box, isbn):
             dict["Authors"] = [", ".join(dict["Authors"])]
         return dict
 
+def add_title_hand():
+    ''' Add book data to DB
+    '''
+    print()
+    print('MANUAL ADDING MODE')
+    print()
+    isbn = input("Enter the ISBN: ")
+    title = input("Enter the Title: ")
+    author = input("Enter the Author: ")
+    publisher = input("Enter the publisher: ")
+    year = input("Enter the Year: ")
+    language = input("Enter the Language: ")
+    
+    if not year:
+        year = 0
+    
+    bookdata = {'ISBN-13': isbn, 'Title': title, 'Authors': [author], 'Publisher': publisher, 'Year': year, 'Language': language}
+    
+    return bookdata
 
 def create_df():
     ''' returns empty pandas data frame with columns: ISBN-13, Title, Authors, Publisher, Year, Language'''
