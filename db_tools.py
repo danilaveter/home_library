@@ -122,8 +122,8 @@ def add_book_isbn():
         if (is_isbn13(isbn_) + is_isbn10(isbn_)) < 1:
             print('ISBN is not correct')
             continue
-        # service = 'default'
-        service = 'kb'
+        service = 'default'
+        # service = 'kb'
         print("Service = KB")
         bookdata = get_bookdata(isbn_, service=service)
 
@@ -243,10 +243,9 @@ def add_title_excel(row):
 def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = None):
     '''Add book to place. ID=1 -> Forth room. ID=2 -> Cold room. ID = 3 -> English room'''
     if place == None:
-        # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
-        
-        place = 18 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
-    
+        print()
+        place = int(input("ENTER THE PLACE --->  "))
+
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
         print(f'Place book already exist. Current amount is {place_amount}')
@@ -278,6 +277,8 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     print()
     
     ##############
+
+
 def is_placebook_exist(title_id, place):
     ''' Returns amount of books if placebook already exists in the DB '''
 
