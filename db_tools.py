@@ -121,19 +121,11 @@ def add_book_isbn():
         isbn_ = input("ENTER THE ISBN ---> ")
         if (is_isbn13(isbn_) + is_isbn10(isbn_)) < 1:
             print('ISBN is not correct')
-            
-        # if not is_exists(isbn_):
-            
-        #     act = input("Add title by hand? [y/n]  ")
-        #     if act.lower() == "y":
-        #             add_title_hand()
-        #     continue
-        
-        bookdata = get_bookdata(isbn_, service='kb')
-        
-        if not bookdata:
-            print('Looking in the Google')
-            bookdata = get_bookdata(isbn_, service='default')
+            continue
+        # service = 'default'
+        service = 'kb'
+        print("Service = KB")
+        bookdata = get_bookdata(isbn_, service=service)
 
         if bookdata:
             isbn = bookdata["ISBN-13"]
@@ -253,17 +245,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 25
-        
-        # 3 - english room
-        # 23 - forth room upstairs
-        
-        
-        
-
-
-        
-        # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 2 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
@@ -302,8 +284,6 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     print()
     
     ##############
-    
-    
 def is_placebook_exist(title_id, place):
     ''' Returns amount of books if placebook already exists in the DB '''
 
