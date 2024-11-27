@@ -7,17 +7,39 @@ import os
 
 
 def get_dict(box, isbn):
-    ''' returns doctionary like # {'ISBN-13': '9781782094234', 'Title': 'Super Science Experiments', 'Authors': ['Chris Oxlade'], 'Publisher': 'SUPER SCIENCE EXPERIMENTS', 'Year': '2013', 'Language': 'en'}'''
+    ''' returns doctionary like # {'ISBN-13': '9781782094234', 'Title': 'Super Science Experiments', 'Authors': ['Chris Oxlade'], 'Publisher': 'SUPER SCIENCE EXPERIMENTS', 'Year': '2013', 'Language': 'en'}
     
-    dict = meta(isbn)
-    if not dict:
-        print("DATA NOT FOUND")
-        return False
-    else:
-        dict['box'] = box
-        if len(dict["Authors"]) > 1:
-            dict["Authors"] = [", ".join(dict["Authors"])]
-        return dict
+    meta(isbn, service='default')
+Gives you the main metadata associated with the ISBN. 
+
+    
+    '''
+    servise_dict = {'goob': 'Google', 'wiki': 'KB', 'openl': 'the OpenLibrary.org'}
+    print('Welcome to the meta function')
+    print()
+    
+    try:
+        for serv in servise_dict:
+            dict = meta(isbn, service=serv)
+            print(f'Looking in {servise_dict[serv]}... ')
+            
+            if not dict:
+                continue
+            else:
+                dict['box'] = box
+                dict['amount'] = input('Amount of the same books/sets:  ')
+                if len(dict["Authors"]) > 1:
+                    dict["Authors"] = [", ".join(dict["Authors"])]
+                return dict
+                
+        if not dict:
+            print('DATA NOT FOUND')
+            return False
+    except: 
+        Exception
+        print()
+        print('error')
+        print()
 
 def add_title_hand():
     ''' Add book data to DB
@@ -41,7 +63,7 @@ def add_title_hand():
 
 def create_df():
     ''' returns empty pandas data frame with columns: ISBN-13, Title, Authors, Publisher, Year, Language'''
-    df = pd.DataFrame(columns = ['box', 'ISBN-13', 'Title', 'Authors', 'Publisher', 'Year', 'Language'])
+    df = pd.DataFrame(columns = ['box', 'amount', 'ISBN-13', 'Title', 'Authors', 'Publisher', 'Year', 'Language'])
     return df
 
 def append_to_df(bookdata, df):

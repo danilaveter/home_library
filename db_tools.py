@@ -103,7 +103,7 @@ def get_bookdata(isbn, service: str = 'default'):
 
 def is_exists(isbn):
     ''' Returns 'True' if book already exists in the DB '''
-    query = f"SELECT id FROM storage_title \
+    query = f"SELECT id FROM app_title \
         WHERE isbn = '{isbn}'"
     
     cur.execute(query)
@@ -144,7 +144,7 @@ def add_book_isbn():
             description = description.replace("'", "''")
             title = title.replace("'","''")
 
-            query = f'''INSERT INTO storage_title (isbn, title, author, publisher, year, language, description, user_id, created, in_stock, is_active, ignore_amount)
+            query = f'''INSERT INTO app_title (isbn, title, author, publisher, year, language, description, user_id, date_added, in_stock, is_active, ignore_amount)
                 VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', '1', CURRENT_TIMESTAMP, TRUE, TRUE, FALSE)'''
             
             title_id = is_exists(isbn)
@@ -197,7 +197,7 @@ def add_title_hand():
     if not year:
         year = 0
 
-    query = f'''INSERT INTO storage_title (isbn, title, author, publisher, year, language, description, created, in_stock, is_active, user_id, ignore_amount) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', CURRENT_TIMESTAMP, TRUE, TRUE, '1', FALSE)'''
+    query = f'''INSERT INTO app_title (isbn, title, author, publisher, year, language, description, date_added, in_stock, is_active, user_id, ignore_amount) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', CURRENT_TIMESTAMP, TRUE, TRUE, '1', FALSE)'''
     
     if not is_exists(isbn):
         cur.execute(query)
@@ -206,7 +206,7 @@ def add_title_hand():
         print(f"Success added ID is {title_id}")
     else:
         id = is_exists(isbn)
-        print(f"Book is already added to table storage_title. ID is {title_id}")
+        print(f"Book is already added to table app_title. ID is {title_id}")
     
     add_to_place(title_id)
 
@@ -218,7 +218,7 @@ def add_title_excel(row):
     isbn, title, author, category_name, level_name, year, location, quantity, description  = row
     description = description.replace("'", "''")
     title = title.replace("'", "''")
-    query = f"""INSERT INTO storage_title (isbn, title, author, category_name, level_name, year, description, created)\
+    query = f"""INSERT INTO app_title (isbn, title, author, category_name, level_name, year, description, date_created)\
         VALUES ('{isbn}', '{title}', '{author}', '{category_name}', '{level_name}', '{year}', '{description}', CURRENT_TIMESTAMP)"""
     
 
@@ -245,7 +245,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 2 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 3 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
@@ -269,13 +269,13 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     
     if place_amount:
         place_amount = int(place_amount)
-        query = f"UPDATE storage_placebook SET copies_num = {amount + place_amount}, added = CURRENT_TIMESTAMP\
+        query = f"UPDATE app_placebook SET amount = {amount + place_amount}, date_added = CURRENT_TIMESTAMP\
         WHERE title_id = {title_id} AND place_id = {place}"
         print()
         
     else:
-        query = f"INSERT INTO storage_placebook (place_id, title_id, copies_num, handle, added)\
-        VALUES ({place}, {title_id}, {amount}, '{handle}', CURRENT_TIMESTAMP)"
+        query = f"INSERT INTO app_placebook (place_id, title_id, amount, date_added)\
+        VALUES ({place}, {title_id}, {amount}, CURRENT_TIMESTAMP)"
         
     cur.execute(query)
     conn.commit()
@@ -287,7 +287,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
 def is_placebook_exist(title_id, place):
     ''' Returns amount of books if placebook already exists in the DB '''
 
-    query = f"SELECT copies_num FROM storage_placebook \
+    query = f"SELECT amount FROM app_placebook \
         WHERE title_id = {title_id} AND place_id = {place}"
     
     cur.execute(query)
@@ -314,7 +314,7 @@ def display_table():
 
 @app.command("show_book")
 def show_book():
-    query = 'SELECT * FROM storage_book'
+    query = 'SELECT * FROM app_book'
     cur.execute(query)
     data = cur.fetchone()
     print(data)
@@ -340,7 +340,7 @@ def add_book_excel():
         
 
 def fetch():
-    query = f'''SELECT title FROM storage_title WHERE id= (SELECT MAX(id) FROM storage_title)'''
+    query = f'''SELECT title FROM app_title WHERE id= (SELECT MAX(id) FROM app_title)'''
     cur.execute(query)
     data = cur.fetchall()
     print("COUNT ROW IS", data)
