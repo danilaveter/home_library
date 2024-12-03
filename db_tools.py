@@ -121,10 +121,14 @@ def add_book_isbn():
         isbn_ = input("ENTER THE ISBN ---> ")
         if (is_isbn13(isbn_) + is_isbn10(isbn_)) < 1:
             print('ISBN is not correct')
-            continue
-        # service = 'default'
-        service = 'kb'
-        print("Service = KB")
+            reaction = input("Continue?  y/n")
+            if reaction in 'yY':
+                pass
+            else:
+                continue
+        service = 'default'
+        # service = 'kb'
+        print("Service = default")
         bookdata = get_bookdata(isbn_, service=service)
 
         if bookdata:
@@ -197,7 +201,7 @@ def add_title_hand():
     if not year:
         year = 0
 
-    query = f'''INSERT INTO app_title (isbn, title, author, publisher, year, language, description, date_added, in_stock, is_active, user_id, ignore_amount) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', CURRENT_TIMESTAMP, TRUE, TRUE, '1', FALSE)'''
+    query = f'''INSERT INTO app_title (isbn, title, author, publisher, year, language, description, date_added, in_stock, must_always_be) VALUES ('{isbn}', '{title}', '{author}', '{publisher}', '{year}', '{lang}', '{description}', CURRENT_TIMESTAMP, TRUE, FALSE)'''
     
     if not is_exists(isbn):
         cur.execute(query)
@@ -245,7 +249,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 3 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 303 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
