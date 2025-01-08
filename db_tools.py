@@ -14,6 +14,7 @@ import psycopg2
 from configparser import ConfigParser
 
 # isbn tool
+import isbnlib
 from isbnlib import meta, is_isbn13, is_isbn10, cover, desc
 from isbnlib.registry import bibformatters
 
@@ -77,10 +78,16 @@ def get_bookdata(isbn, service: str = 'default'):
     # isbn = input('Enter ISBN  ')
     ''' This returns title, author, puplisher, year, language of the book usind ISBN13'''
 
-    print("Looking up data using", isbn)
+    print("Looking up data using ", service)
+    isbn = '9781838690588'
 
     try:
-        metabook = meta(isbn, service)
+        metabook = isbnlib.meta(isbn)
+
+        if not metabook:
+            print('No data in the default servise')
+            metabook = meta(isbn, service='kb')
+
         if metabook:
             bookdata = {}
             for x,y in metabook.items():
@@ -95,9 +102,14 @@ def get_bookdata(isbn, service: str = 'default'):
             return bookdata
         else:
             return False
-    except (Exception, KeyError):
-        print(Exception, KeyError)
+
+    except Exception as e:
+        print(e)
         return False
+
+
+        
+    
 
 # ADD to Database
 
@@ -109,9 +121,9 @@ def is_exists(isbn):
     cur.execute(query)
     id = cur.fetchone()
     if id:
-        print(f'is_exists_id = {id}')
+        print(f'ID in collection: {id}')
         return id[0]
-    print("is_exists NO ID")
+    print("Title doesnt exist in the Biblionef collection")
     return False
     
 @app.command()
@@ -126,10 +138,8 @@ def add_book_isbn():
                 pass
             else:
                 continue
-        service = 'default'
-        # service = 'kb'
-        print("Service = default")
-        bookdata = get_bookdata(isbn_, service=service)
+        
+        bookdata = get_bookdata(isbn_)
 
         if bookdata:
             isbn = bookdata["ISBN-13"]
@@ -249,7 +259,7 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     if place == None:
         # place = input("ENTER THE PLACE ID (cold_room it's 3) --> ")
         
-        place = 303 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
+        place = 304 # <<< -----  CHANGE THE PLACE!!!!! -------------------------------------------
     
     place_amount = is_placebook_exist(title_id, place)
     if place_amount:
@@ -288,6 +298,8 @@ def add_to_place(title_id, place: Optional[int] = None, amount: Optional[int] = 
     print()
     
     ##############
+
+
 def is_placebook_exist(title_id, place):
     ''' Returns amount of books if placebook already exists in the DB '''
 
